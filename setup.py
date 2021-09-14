@@ -1,16 +1,16 @@
 import setuptools
 
-with open("README.rst", "r") as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="dbgz",
-    version="0.2.6",
+    version="0.3.0",
     author="Filipi N. Silva",
     author_email="filipi@iu.edu",
     description="Python library to load DBGZ files",
     long_description=long_description,
-    long_description_content_type="text/x-rst",
+    long_description_content_type="text/markdown",
     url="https://github.com/filipinascimento/dbgz",
     packages=setuptools.find_packages(),
     classifiers=[
