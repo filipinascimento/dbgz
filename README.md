@@ -1,5 +1,18 @@
 # dbgz
-Small utility to read and write data from/to dbgz
+Small utility to read and write data from/to dbgz files
+
+## Installation
+
+Install using pip
+
+```bash
+pip install dbgz
+```
+
+or from source:
+```bash
+pip git+https://github.com/filipinascimento/dbgz.git
+```
 
 ## Usage
 First import dbgz:
@@ -24,7 +37,7 @@ Writing some data to a dbgz file
 ```python
 from tqdm.auto import tqdm # Optional, to print progress bar
 
-totalCount = 10000000;
+totalCount = 1000000;
 with dbgz.DBGZWriter("test.dbgz",scheme) as fd:
   # New entries can be added as:
   fd.write(anInteger=1, aString="1")
@@ -78,7 +91,7 @@ Saving dictionary to file and loading it again
 ```python
 with dbgz.DBGZReader("test.dbgz") as fd:
   fd.generateIndex("anInteger",
-    indicesPath="test_by.idbgz", 
+    indicesPath="test_byAnInteger.idbgz", 
     filterFunction=lambda entry: entry["anInteger"]<10,
     useDictionary=True,
     showProgressbar = True
