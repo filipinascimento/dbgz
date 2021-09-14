@@ -13,7 +13,7 @@ scheme = [
 ]
 
 # Writing some data to a dbgz file
-totalCount = 10000000;
+totalCount = 1000000;
 with dbgz.DBGZWriter("test.dbgz",scheme) as fd:
   # New entries can be added as:
   fd.write(anInteger=1, aString="1")
@@ -63,7 +63,7 @@ with dbgz.DBGZReader("test.dbgz") as fd:
 # Saving dictionary to file and loading it again
 with dbgz.DBGZReader("test.dbgz") as fd:
   fd.generateIndex("anInteger",
-    indicesPath="test_by.idbgz", 
+    indicesPath="test_byAnInteger.idbgz", 
     filterFunction=lambda entry: entry["anInteger"]<10,
     useDictionary=True,
     showProgressbar = True
