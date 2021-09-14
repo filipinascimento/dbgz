@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="dbgz",
-    version="0.3.1",
+    version="0.3.2",
     author="Filipi N. Silva",
     author_email="filipi@iu.edu",
     description="Python library to load DBGZ files",
