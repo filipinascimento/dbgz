@@ -13,62 +13,62 @@ def _calcSize(format):
 
 def string2Data(text):
   textData = text.encode("utf8");
-  data = struct.pack("<q",int(len(textData)))
+  data = struct.pack("<Q",int(len(textData)))
   data+=textData
   return data
 
 def data2String(data,currentPointer):
-  pointerSize = _calcSize("<q")
-  stringLength, = struct.unpack("<q",data[currentPointer:currentPointer+pointerSize])
+  pointerSize = _calcSize("<Q")
+  stringLength, = struct.unpack("<Q",data[currentPointer:currentPointer+pointerSize])
   return (
     data[currentPointer+pointerSize:currentPointer+pointerSize+stringLength].decode("utf8"),
     currentPointer+stringLength+pointerSize)
 
 def int2Data(value):
-  return struct.pack("<i",value)
-
-def intArray2Data(values):
-  return struct.pack("<q%ui"%len(values),len(values),*values)
-
-def data2Int(data,currentPointer):
-  pointerSize = _calcSize("<i")
-  value, = struct.unpack("<i",data[currentPointer:currentPointer+pointerSize])
-  return (value,currentPointer+pointerSize)
-
-def data2IntArray(data,currentPointer):
-  offset = _calcSize("<q")
-  count, = struct.unpack("<q",data[currentPointer:currentPointer+offset])
-  pointerSize = count*_calcSize("<i")
-  values=()
-  if(count):
-    values = struct.unpack("<%ui"%count,data[(currentPointer+offset):(currentPointer+offset+pointerSize)])
-  return (values,currentPointer+offset+pointerSize)
-
-def uint2Data(value):
   return struct.pack("<q",value)
 
-def uintArray2Data(values):
-  return struct.pack("<q%uq"%len(values),len(values),*values)
+def intArray2Data(values):
+  return struct.pack("<Q%uq"%len(values),len(values),*values)
 
-def data2UInt(data,currentPointer):
+def data2Int(data,currentPointer):
   pointerSize = _calcSize("<q")
   value, = struct.unpack("<q",data[currentPointer:currentPointer+pointerSize])
   return (value,currentPointer+pointerSize)
 
-def data2UIntArray(data,currentPointer):
-  offset = _calcSize("<q")
-  count, = struct.unpack("<q",data[currentPointer:currentPointer+offset])
+def data2IntArray(data,currentPointer):
+  offset = _calcSize("<Q")
+  count, = struct.unpack("<Q",data[currentPointer:currentPointer+offset])
   pointerSize = count*_calcSize("<q")
   values=()
   if(count):
     values = struct.unpack("<%uq"%count,data[(currentPointer+offset):(currentPointer+offset+pointerSize)])
+  return (values,currentPointer+offset+pointerSize)
+
+def uint2Data(value):
+  return struct.pack("<Q",value)
+
+def uintArray2Data(values):
+  return struct.pack("<Q%uQ"%len(values),len(values),*values)
+
+def data2UInt(data,currentPointer):
+  pointerSize = _calcSize("<Q")
+  value, = struct.unpack("<Q",data[currentPointer:currentPointer+pointerSize])
+  return (value,currentPointer+pointerSize)
+
+def data2UIntArray(data,currentPointer):
+  offset = _calcSize("<Q")
+  count, = struct.unpack("<Q",data[currentPointer:currentPointer+offset])
+  pointerSize = count*_calcSize("<Q")
+  values=()
+  if(count):
+    values = struct.unpack("<%uQ"%count,data[(currentPointer+offset):(currentPointer+offset+pointerSize)])
   return (values,currentPointer+offset+pointerSize)
   
 def double2Data(value):
   return struct.pack("<d",value)
 
 def doubleArray2Data(values):
-  return struct.pack("<q%ud"%len(values),len(values),*values)
+  return struct.pack("<Q%ud"%len(values),len(values),*values)
 
 def data2Double(data,currentPointer):
   pointerSize = _calcSize("<d")
@@ -76,8 +76,8 @@ def data2Double(data,currentPointer):
   return (value,currentPointer+pointerSize)
   
 def data2DoubleArray(data,currentPointer):
-  offset = _calcSize("<q")
-  count, = struct.unpack("<q",data[currentPointer:currentPointer+offset])
+  offset = _calcSize("<Q")
+  count, = struct.unpack("<Q",data[currentPointer:currentPointer+offset])
   pointerSize = count*_calcSize("<d")
   values=()
   if(count):
@@ -89,7 +89,7 @@ def float2Data(value):
   return struct.pack("<f",value)
 
 def floatArray2Data(values):
-  return struct.pack("<q%uf"%len(values),len(values),*values)
+  return struct.pack("<Q%uf"%len(values),len(values),*values)
 
 def data2Float(data,currentPointer):
   pointerSize = _calcSize("<f")
@@ -97,8 +97,8 @@ def data2Float(data,currentPointer):
   return (value,currentPointer+pointerSize)
 
 def data2FloatArray(data,currentPointer):
-  offset = _calcSize("<q")
-  count, = struct.unpack("<q",data[currentPointer:currentPointer+offset])
+  offset = _calcSize("<Q")
+  count, = struct.unpack("<Q",data[currentPointer:currentPointer+offset])
   pointerSize = count*_calcSize("<f")
   values=()
   if(count):
@@ -108,14 +108,14 @@ def data2FloatArray(data,currentPointer):
 
 
 def stringArray2Data(textArray):
-  data = struct.pack("<q",int(len(textArray)))
+  data = struct.pack("<Q",int(len(textArray)))
   for text in textArray:
     data+=string2Data(text)
   return data
 
 def data2StringArray(data,currentPointer):
-  offset = _calcSize("<q")
-  count, = struct.unpack("<q",data[currentPointer:currentPointer+offset])
+  offset = _calcSize("<Q")
+  count, = struct.unpack("<Q",data[currentPointer:currentPointer+offset])
   values = []
   pointerSize = 0
   currentPointer+=offset
@@ -170,7 +170,7 @@ class DBGZWriter():
     for (index,(default,encode,decode)) in enumerate(self.index2Type):
       entryData+=encode(values[index])
     self.totalEntries+=1
-    finalData = (struct.pack("<q",len(entryData))+entryData)
+    finalData = (struct.pack("<Q",len(entryData))+entryData)
     self.aggregatedData+=finalData
     self._aggregatedUpdate()
   
@@ -186,7 +186,7 @@ class DBGZWriter():
       self.index2Type.append(_typesDictionary[typeType])
       data+=string2Data(typeName)
       data+=typeType.encode("utf8")
-    self.fd.write(struct.pack("<q",len(data)))
+    self.fd.write(struct.pack("<Q",len(data)))
     self.fd.write(data)
   def _aggregatedUpdate(self,flush=False):
     if(flush or len(self.aggregatedData)>2000):
@@ -220,8 +220,8 @@ class DBGZReader():
     return count
 
   def _readScheme(self):
-    pointerSize = _calcSize("<q")
-    dataSize, = struct.unpack("<q",self.fd.read(pointerSize))
+    pointerSize = _calcSize("<Q")
+    dataSize, = struct.unpack("<Q",self.fd.read(pointerSize))
     data = self.fd.read(dataSize)
     currentPointer = 0
     self.scheme = []
@@ -239,14 +239,14 @@ class DBGZReader():
       self.index2Name.append(typeName)
       self.index2Type.append(_typesDictionary[typeType])
   def read(self,count=1,getPositions=False):
-    pointerSize = _calcSize("<q")
+    pointerSize = _calcSize("<Q")
     entries = []
     for _ in range(count):
       position = self.fd.tell()
       sizeData = self.fd.read(pointerSize)
       if(not sizeData):
         break
-      dataSize, = struct.unpack("<q",sizeData)
+      dataSize, = struct.unpack("<Q",sizeData)
       data = self.fd.read(dataSize)
       entry = {}
       currentPointer = 0
@@ -257,14 +257,14 @@ class DBGZReader():
       entries.append(entry)
     return entries
   def readAsList(self,count=1,getPositions=False):
-    pointerSize = _calcSize("<q")
+    pointerSize = _calcSize("<Q")
     entries = []
     for _ in range(count):
       position = self.fd.tell()
       sizeData = self.fd.read(pointerSize)
       if(not sizeData):
         break;
-      dataSize, = struct.unpack("<q",sizeData)
+      dataSize, = struct.unpack("<Q",sizeData)
       data = self.fd.read(dataSize)
       entry = []
       currentPointer = 0
