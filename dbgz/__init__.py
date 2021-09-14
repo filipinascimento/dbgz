@@ -2,6 +2,7 @@
 # -*- coding: <utf-8> -*-
 from .dbgz import DBGZWriter
 from .dbgz import DBGZReader
+from .dbgz import readIndicesDictionary
 
-__version__ = "0.2.6"
+__version__ = "0.3.0"
 

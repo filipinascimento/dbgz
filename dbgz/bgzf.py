@@ -846,18 +846,23 @@ class BgzfWriter:
         self._buffer = b""
         self._handle.flush()
 
-    def close(self):
+    def close(self,extraData=None):
         """Flush data, write 28 bytes BGZF EOF marker, and close BGZF file.
 
         samtools will look for a magic EOF marker, just a 28 byte empty BGZF
         block, and if it is missing warns the BAM file may be truncated. In
         addition to samtools writing this block, so too does bgzip - so this
         implementation does too.
+
+        Added option to write extra data after the EOF magic.
         """
         if self._buffer:
             self.flush()
         self._handle.write(_bgzf_eof)
         self._handle.flush()
+        if(extraData):
+            self._handle.write(extraData)
+            self._handle.flush()
         self._handle.close()
 
     def tell(self):

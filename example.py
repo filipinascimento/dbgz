@@ -1,34 +1,77 @@
-
-from dbgz.dbgz import DBGZWriter
-from dbgz.dbgz import DBGZReader
+import dbgz
 from tqdm.auto import tqdm
+
+# Defining a scheme
+
 scheme = [
-  ("Integer","i"),
-  ("Float","f"),
-  ("String","s"),
-  ("IntArray","I"),
-  ("FloatArray","F"),
+  ("anInteger","i"),
+  ("aFloat","f"),
+  ("aString","s"),
+  ("anIntArray","I"),
+  ("aFloatArray","F"),
+  ("anStringArray","S"),
 ]
 
-with DBGZWriter("test.dbgz",scheme,mode="wb") as fd:
-  # fd.write(Integer=1,String="a string")
-  # fd.write(Integer=2,String="another string", Float=5)
-  # fd.write(Integer=3,IntArray=list(range(10)),FloatArray=[0.1,0.2,0.3,0.5])
-  for index in tqdm(range(10000000)):
-    fd.write(Integer=index,Float=index*0.01,IntArray=list(range(index,index+10)),String=str(index),FloatArray=[index+0.1,index-0.2,index+0.3,index+0.4])
+# Writing some data to a dbgz file
+totalCount = 10000000;
+with dbgz.DBGZWriter("test.dbgz",scheme) as fd:
+  # New entries can be added as:
+  fd.write(anInteger=1, aString="1")
+  fd.write(anInteger=2, aString="2", aFloat=5)
+  fd.write(anInteger=3, aString="3",anIntArray=list(range(10)), aFloatArray=[0.1,0.2,0.3,0.5])
 
-def loadit():
-  pbar = tqdm(total=10000000)
-  with DBGZReader("test.dbgz",mode="rb") as fd:
-    print(fd.scheme)
-    while True:
-      entries = fd.read(10)
-      if(not entries):
-        break
-      for entry in entries:
-        assert entry["Integer"] == int(entry["String"])
-      pbar.update(len(entries))
+  # Here is a loop to write a lot of data:
+  for index in tqdm(range(totalCount)):
+    fd.write(
+      anInteger=index,
+      aFloat=index*0.01,
+      anIntArray=list(range(index,index+10)),
+      aString=str(index),
+      aFloatArray=[index+0.1,index-0.2,index+0.3,index+0.4],
+      anStringArray=[str(index),str(index+1),str(index+2),str(index+3)]
+    )
 
-loadit()
+# Loading a dbgz file
+with dbgz.DBGZReader("test.dbgz") as fd:
+  pbar = tqdm(total=fd.entriesCount)
+  print(fd.scheme)
+  while True:
+    entries = fd.read(10)
+    if(not entries):
+      break
+    for entry in entries:
+      assert entry["anInteger"] == int(entry["aString"])
+    pbar.update(len(entries))
+pbar.refresh()
+pbar.close()
 
+
+# Saving dictionary to file and loading it again
+with dbgz.DBGZReader("test.dbgz") as fd:
+  indexDictionary = fd.generateIndex("anInteger",
+    indicesPath=None,
+    filterFunction=lambda entry: entry["anInteger"]<10,
+    useDictionary=True,
+    showProgressbar = True
+    )
+  for key,values in indexDictionary.items():
+    print(key,values)
+    for value in values:
+      assert int(key) == fd.readAt(value)[0]["anInteger"]
+
+
+# Saving dictionary to file and loading it again
+with dbgz.DBGZReader("test.dbgz") as fd:
+  fd.generateIndex("anInteger",
+    indicesPath="test_by.idbgz", 
+    filterFunction=lambda entry: entry["anInteger"]<10,
+    useDictionary=True,
+    showProgressbar = True
+    )
+
+  indexDictionary = dbgz.readIndicesDictionary("test_by.idbgz")
+  for key,values in indexDictionary.items():
+    print(key,values)
+    for value in values:
+      assert int(key) == fd.readAt(value)[0]["anInteger"]
 
