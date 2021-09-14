@@ -4,5 +4,5 @@ from .dbgz import DBGZWriter
 from .dbgz import DBGZReader
 from .dbgz import readIndicesDictionary
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
