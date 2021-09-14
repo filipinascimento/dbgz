@@ -195,7 +195,7 @@ class DBGZWriter():
 
 class DBGZReader():
   def __init__(self, filename, *args, **kwargs):
-    self.fd = BgzfReader(filename, mode="wb",*args, **kwargs)
+    self.fd = BgzfReader(filename, mode="rb",*args, **kwargs)
     self.entriesCount = self.readEntriesCount()
     self._readScheme()
     self.startPosition = self.fd.tell()
