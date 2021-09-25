@@ -364,7 +364,7 @@ def readIndicesDictionary(indicesDataPath, showProgressbar=False):
     from tqdm.auto import tqdm
   with BgzfReader(indicesDataPath,"rb") as fd:
     if(showProgressbar):
-      startPoint = self.fd._handle.tell()
+      startPoint = fd._handle.tell()
       pointerSize = _calcSize("<Q")
       fd._handle.seek(-pointerSize, os.SEEK_END)
       totalEntriesCount, = struct.unpack("<Q",fd._handle.read(pointerSize))
