@@ -8,7 +8,7 @@ with open("requirements.txt", "r") as fh:
 
 setuptools.setup(
     name="dbgz",
-    version="0.4.0",
+    version="0.4.1",
     author="Filipi N. Silva",
     author_email="filipi@iu.edu",
     description="Python library to load DBGZ files",
