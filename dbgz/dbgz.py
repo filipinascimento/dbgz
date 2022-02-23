@@ -5,14 +5,13 @@ import struct
 import os
 import msgpack
 
-
-
 # _sizeStructCache = {}
 
 def _calcSize(format):
   structSize = struct.calcsize(format)
   # _sizeStructCache[format] = structSize;
   return structSize
+
 
 def any2Data(anyObject):
   data = msgpack.packb(anyObject,use_bin_type=True)
@@ -230,6 +229,24 @@ class DBGZReader():
   def currentPosition(self):
       return self.fd.tell()
   
+  @property
+  def entries(self):
+    while True:
+      entries = self.read(100)
+      if(not entries):
+        break
+      for entry in entries:
+        yield entry
+
+  @property
+  def entriesAsList(self):
+    while True:
+      entries = self.readAsList(100)
+      if(not entries):
+        break
+      for entry in entries:
+        yield entry
+
   def readEntriesCount(self):
     count=0
     startPoint = self.fd._handle.tell()

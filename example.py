@@ -14,7 +14,7 @@ scheme = [
 ]
 
 # Writing some data to a dbgz file
-totalCount = 10000
+totalCount = 100000
 print("Saving a dbgz file")
 with dbgz.DBGZWriter("test.dbgz", scheme) as fd:
     # New entries can be added as:
@@ -34,6 +34,15 @@ with dbgz.DBGZWriter("test.dbgz", scheme) as fd:
                            str(index+2), str(index+3)],
             anyType={"a": index, "b": index+1, "c": index+2}
         )
+
+
+# Simple reading of the data
+print("Simple loading a dbgz file")
+with dbgz.DBGZReader("test.dbgz") as fd:
+  print(fd.scheme)
+  for entry in tqdm(fd.entries,total=fd.entriesCount):
+    assert entry["anInteger"] == int(entry["aString"])
+
 
 # Loading a dbgz file
 print("Loading a dbgz file")

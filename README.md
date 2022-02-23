@@ -57,6 +57,14 @@ with dbgz.DBGZWriter("test.dbgz",scheme) as fd:
     )
 ```
 
+Reading the dbgz file sequencially:
+```python
+with dbgz.DBGZReader("test.dbgz") as fd:
+  print(fd.scheme)
+  for entry in tqdm(fd.entries,total=fd.entriesCount):
+    assert entry["anInteger"] == int(entry["aString"])
+```
+
 Loading a dbgz file
 ```python
 with dbgz.DBGZReader("test.dbgz") as fd:
