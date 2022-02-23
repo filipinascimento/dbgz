@@ -36,6 +36,7 @@ scheme = [
 Writing some data to a dbgz file
 ```python
 from tqdm.auto import tqdm # Optional, to print progress bar
+# pip install tqdm
 
 totalCount = 1000000;
 with dbgz.DBGZWriter("test.dbgz",scheme) as fd:

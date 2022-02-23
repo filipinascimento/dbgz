@@ -3,6 +3,9 @@ from .bgzf import BgzfWriter
 from .bgzf import BgzfReader
 import struct
 import os
+import msgpack
+
+
 
 # _sizeStructCache = {}
 
@@ -10,6 +13,21 @@ def _calcSize(format):
   structSize = struct.calcsize(format)
   # _sizeStructCache[format] = structSize;
   return structSize
+
+def any2Data(anyObject):
+  data = msgpack.packb(anyObject,use_bin_type=True)
+  data = struct.pack("<Q",int(len(data)))+data
+  return data
+
+def data2Any(data,currentPointer):
+  pointerSize = _calcSize("<Q")
+  dataLength, = struct.unpack("<Q",data[currentPointer:currentPointer+pointerSize])
+  if dataLength == 0:
+    # print("data length is 0")
+    return (None,currentPointer+pointerSize)
+  return (
+    msgpack.unpackb(data[currentPointer+pointerSize:currentPointer+pointerSize+dataLength],raw=False),
+    currentPointer+dataLength+pointerSize)
 
 def string2Data(text):
   textData = text.encode("utf8");
@@ -139,6 +157,8 @@ _typesDictionary = {
   "F": ((),floatArray2Data,data2FloatArray),
   "D": ((),doubleArray2Data,data2DoubleArray),
   "S": ((),stringArray2Data,data2StringArray),
+
+  "a": (None,any2Data,data2Any),
 }
 
 class DBGZWriter():
