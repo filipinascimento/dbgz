@@ -320,53 +320,102 @@ class DBGZReader():
     return self.readAsList(count,getPositions)
   
   def generateIndex(self,
-    propertyName,
+    key = None,
+    keyFunction = None,
     filterFunction=None,
     indicesPath=None,
-    useDictionary=False,
-    showProgressbar = False,
+    useDictionary=True,
+    showProgressbar = True,
     maxCount = -1,
   ):
+    """
+    Generates an index for the given key.
+
+    Parameters
+    ----------
+    key : str
+      The key used to construct the index.
+      (either key or keyFunction must be given)
+    keyFunction : function
+      A function that takes an entry and returns the value of the key or list of keys.
+      If not given, the key is assumed to be a property key.
+      (either key or keyFunction must be given)
+    filterFunction : function
+      A function that takes an entry and returns True if the entry should be included
+      in the index.
+      (optional)
+    indicesPath : str
+      The path to the directory where the index will be stored.
+      If not given, the index will not be saved automatically.
+      (optional)
+    useDictionary : bool
+      If True, will use the dictionary representation for the keyFunction and filterFunction.
+      (detaults to True)
+    showProgressbar : bool
+      If True, will show a progressbar while indexing.
+      (defaults to True)
+    maxCount : int
+      If given, will only index the first maxCount entries.
+      (defaults to -1, which means all entries)
+    
+    Returns
+    -------
+    index : dict
+      The index (only if indicesPath is not given)
+    """
+
     if(showProgressbar):
       from tqdm.auto import tqdm
-    if(propertyName not in self.name2Index):
-      raise Exception("Property '"+propertyName+"' not found in the scheme")
+    if(keyFunction is None):
+      if(key is None):
+        raise Exception("At least key or keyFunction must be given")
+      if(key not in self.name2Index):
+        raise Exception("Property '"+key+"' not found in the scheme")
+      propertyIndex = self.name2Index[key]
+    #no point in using a dictionary if we don't have a filter or key function
+    if((filterFunction is None) and (keyFunction is None)):
+      useDictionary = False
+    if(showProgressbar):
+      estimatedCount = self.entriesCount
+      if(maxCount>=0):
+        estimatedCount = maxCount
+      pbar = tqdm(total=estimatedCount)
+    savedPosition = self.currentPosition()
+    self.reset()
+    if(indicesPath is not None):
+      fd = BgzfWriter(indicesPath,"w")
     else:
-      propertyIndex = self.name2Index[propertyName]
-      if(showProgressbar):
-        estimatedCount = self.entriesCount
-        if(maxCount>=0):
-          estimatedCount = maxCount
-        pbar = tqdm(total=estimatedCount)
-      savedPosition = self.currentPosition()
-      self.reset()
-      if(indicesPath is not None):
-        fd = BgzfWriter(indicesPath,"w")
+      indexDictionary = {}
+    entriesCount = 0
+    while True:
+      if(useDictionary):
+        entries = self.read(100,True)
       else:
-        indexDictionary = {}
-      entriesCount = 0
-      while True:
-        if(useDictionary):
-          entries = self.read(100,True)
-        else:
-          entries = self.readAsList(100,True)
-        if(entries):
-          for entry in entries:
-            if(showProgressbar):
-              pbar.update(1)
-            if(filterFunction is not None and not filterFunction(entry)):
-              continue
-            entriesCount+=1
-            if(maxCount>=0 and entriesCount>maxCount):
-              break
+        entries = self.readAsList(100,True)
+      if(entries):
+        for entry in entries:
+          if(showProgressbar):
+            pbar.update(1)
+          if(filterFunction is not None and not filterFunction(entry)):
+            continue
+          entriesCount+=1
+          if(maxCount>=0 and entriesCount>maxCount):
+            break
+          else:
+            if(keyFunction is not None):
+                propertyValues = keyFunction(entry)
             else:
               if(useDictionary):
-                propertyValues = entry[propertyName]
-                position = entry["_position"]
+                propertyValues = entry[key]
               else:
                 propertyValues = entry[propertyIndex]
-                position = entry[-1]
-              if(not isinstance(propertyValues,tuple)):
+            if(useDictionary):
+                position = entry["_position"]
+            else:
+              position = entry[-1]
+            
+            if(propertyValues is not None):
+              if(not isinstance(propertyValues,tuple) and not isinstance(propertyValues,list)):
                 propertyValues = (propertyValues,)
               for propertyValue in propertyValues:
                 if(propertyValue is not None and propertyValue!=""):
@@ -377,20 +426,20 @@ class DBGZReader():
                     if(propertyValue not in indexDictionary):
                       indexDictionary[propertyValue] = []
                     indexDictionary[propertyValue].append(position)
-        else:
-          break
-        if(maxCount>=0 and entriesCount>maxCount):
-          break
-      
-      self.fd.seek(savedPosition)
-      if(showProgressbar):
-          pbar.refresh()
-          pbar.close()
-      if(indicesPath is not None):
-        fd.close(extraData = struct.pack("<Q",entriesCount))
-        return
       else:
-        return indexDictionary
+        break
+      if(maxCount>=0 and entriesCount>maxCount):
+        break
+    
+    self.fd.seek(savedPosition)
+    if(showProgressbar):
+        pbar.refresh()
+        pbar.close()
+    if(indicesPath is not None):
+      fd.close(extraData = struct.pack("<Q",entriesCount))
+      return None
+    else:
+      return indexDictionary
 
   def close(self):
     self.fd.close()

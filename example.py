@@ -10,7 +10,7 @@ scheme = [
     ("anIntArray", "I"),
     ("aFloatArray", "F"),
     ("anStringArray", "S"),
-    ("anyType","a"),
+    ("anyType","a"), #any type
 ]
 
 # Writing some data to a dbgz file
@@ -39,17 +39,17 @@ with dbgz.DBGZWriter("test.dbgz", scheme) as fd:
 # Simple reading of the data
 print("Simple loading a dbgz file")
 with dbgz.DBGZReader("test.dbgz") as fd:
-  print(fd.scheme)
+  print("\t Scheme: ",fd.scheme)
   for entry in tqdm(fd.entries,total=fd.entriesCount):
     assert entry["anInteger"] == int(entry["aString"])
 
 
-# Loading a dbgz file
+# Loading a dbgz file entry by entry
 print("Loading a dbgz file")
 with dbgz.DBGZReader("test.dbgz") as fd:
     print("\t Number of entries: ", fd.entriesCount)
-    pbar = tqdm(total=fd.entriesCount)
     print("\t Scheme: ", fd.scheme)
+    pbar = tqdm(total=fd.entriesCount)
     while True:
         entries = fd.read(10)
         if(not entries):
@@ -79,7 +79,7 @@ with dbgz.DBGZReader("test.dbgz") as fd:
 # Saving dictionary to file and loading it again
 print("Saving the index dictionary")
 with dbgz.DBGZReader("test.dbgz") as fd:
-    fd.generateIndex("anInteger",
+    fd.generateIndex(key="anInteger",
                      indicesPath="test_byAnInteger.idbgz",
                      filterFunction=lambda entry: entry["anInteger"] < 10,
                      useDictionary=True,
@@ -92,3 +92,25 @@ with dbgz.DBGZReader("test.dbgz") as fd:
         print(key, values)
         for value in values:
             assert int(key) == fd.readAt(value)[0]["anInteger"]
+
+
+
+# Saving dictionary to file and loading it again
+print("Saving the index dictionary")
+with dbgz.DBGZReader("test.dbgz") as fd:
+    fd.generateIndex(
+                     indicesPath="test_byAnyType_b.idbgz",
+                     filterFunction=lambda entry: entry["anInteger"] < 10,
+                     keyFunction=lambda entry: entry["anyType"]["b"] if entry["anyType"] else None,
+                     useDictionary=True,
+                     showProgressbar=True
+                     )
+
+    print("Loading the index dictionary")
+    indexDictionary = dbgz.readIndicesDictionary("test_byAnyType_b.idbgz")
+    for key, values in indexDictionary.items():
+        print(key, values)
+        for value in values:
+            entry = fd.readAt(value)[0]
+            assert int(key) == entry["anyType"]["b"] if entry["anyType"] else None
+
