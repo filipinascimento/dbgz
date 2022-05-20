@@ -29,7 +29,10 @@ def data2Any(data,currentPointer):
     currentPointer+dataLength+pointerSize)
 
 def string2Data(text):
-  textData = text.encode("utf8");
+  if(text is not None):
+    textData = text.encode("utf8")
+  else:
+    textData = "".encode("utf8")
   data = struct.pack("<Q",int(len(textData)))
   data+=textData
   return data
