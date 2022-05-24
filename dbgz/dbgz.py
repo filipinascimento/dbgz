@@ -190,7 +190,10 @@ class DBGZWriter():
   def writeFromArray(self,values):
     entryData = b""
     for (index,(default,encode,decode)) in enumerate(self.index2Type):
-      entryData+=encode(values[index])
+      currentValue = values[index]
+      if(currentValue is None):
+        currentValue = default
+      entryData+=encode(currentValue)
     self.totalEntries+=1
     finalData = (struct.pack("<Q",len(entryData))+entryData)
     self.aggregatedData+=finalData
