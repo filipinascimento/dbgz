@@ -393,6 +393,7 @@ class DBGZReader():
     else:
       indexDictionary = {}
     entriesCount = 0
+    writtenEntries = 0
     while True:
       if(useDictionary):
         entries = self.read(100,True)
@@ -426,6 +427,7 @@ class DBGZReader():
               for propertyValue in propertyValues:
                 if(propertyValue is not None and propertyValue!=""):
                   if(indicesPath is not None):
+                    writtenEntries+=1
                     data = str(propertyValue).encode("utf8")
                     fd.write(struct.pack("<QQ",len(data)+8,position)+data)
                   else:
@@ -442,7 +444,7 @@ class DBGZReader():
         pbar.refresh()
         pbar.close()
     if(indicesPath is not None):
-      fd.close(extraData = struct.pack("<Q",entriesCount))
+      fd.close(extraData = struct.pack("<Q",writtenEntries))
       return None
     else:
       return indexDictionary
