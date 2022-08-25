@@ -29,7 +29,8 @@ def data2Any(data, currentPointer):
         return (None, currentPointer+pointerSize)
     return (
         msgpack.unpackb(
-            data[currentPointer+pointerSize:currentPointer+pointerSize+dataLength], raw=False),
+            data[currentPointer+pointerSize:currentPointer+pointerSize+dataLength],
+            raw=False, strict_map_key=False),
         currentPointer+dataLength+pointerSize)
 
 
